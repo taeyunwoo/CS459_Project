@@ -15,5 +15,15 @@ function bringData(){
     console.log(url);
     $.get(url, function(data){
         console.log(data);
+        firstComment(data);
+
     })
+}
+
+function firstComment(data){
+    //var firstComment = data.items[0].snippet.topLevelComment.snippet.textOriginal;
+    var firstComment = data.items[0].snippet.topLevelComment.snippet.textDisplay;
+
+    console.log(firstComment);
+    $("#result").text(firstComment);
 }
