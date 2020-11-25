@@ -1,3 +1,22 @@
 .row {
-    height: 20%;
+    margin: 1%;
+}
+
+.container {
+    margin:0;
+
+}
+
+button {
+    height:100%;
+    position: relative;
+    bottom: 2px;
+}
+#videoLink {
+    width:50%;
+}
+
+#videoLink::placeholder {
+    margin-left: 10px;
+
 }

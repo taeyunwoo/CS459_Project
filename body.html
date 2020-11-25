@@ -2,35 +2,47 @@
     <head>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
         <link href="body.css" rel="stylesheet" />
+        <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" />
+        <link href="https://use.fontawesome.com/releases/v5.0.8/css/all.css" rel="stylesheet">
 
             
     </head>
     <body>
-
         <div class="container">
-            <div class="row">
-                <div class="col-sm-1"></div>
-                <div class="col-md-10">
-                    <input type = "text" id = "videoLink" placeholder="Insert YouTube Video Link"/>
-                    <button onclick="bringData()" class = "btn btn-sm btn-success"> DO</button>
+            <div class="row ">
+                <div class="col-md-9">
+                    <H1>YouTube Playlist Music Player</H1>
                 </div>
-                <div class="col-md-1"></div>
+                <div class = "col-md-3">
+
+                </div>
             </div>
             <div class="row">
-                <div class="col-sm-1"></div>
-                <div class="col-md-10">
-                    <iframe width="560" height="315" src="https://www.youtube.com/embed/XrPBMs_gSeA" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                <div class="col-md-9">
+                    <input type = "text" id = "videoLink" placeholder="   Insert YouTube Video Link"/>
+                    <button onclick="bringData()" class = "btn btn-sm btn-success"> <i class="fas fa-sync-alt"></i>                    </button>
                 </div>
-                <div class="col-md-1"></div>
+                <div class = "col-md-3">
+                    
+                </div>
             </div>
             <div class="row">
-                <div class="col-sm-1"></div>
-                <div class="col-md-10">
-                    <p id="result">
-                        hi
-                    </p>
+                <div class="col-md-9">
+                    <p id="title">   </p>
                 </div>
-                <div class="col-md-1"></div>
+                <div class = "col-md-3">
+                    
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-9">
+                    <iframe width="560" height="305" src="https://www.youtube.com/embed/XrPBMs_gSeA" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+                <div class="col-md-3">
+                    <table id = "playlist">
+                        df
+                    </table>
+                </div>
             </div>
         </div>
 
