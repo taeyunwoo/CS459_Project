@@ -1,5 +1,6 @@
 .row {
     margin: 1%;
+    height:fixed;
 }
 
 .container {
@@ -13,10 +14,23 @@ button {
     bottom: 2px;
 }
 #videoLink {
-    width:50%;
+    width:80%;
 }
 
 #videoLink::placeholder {
     margin-left: 10px;
+
+}
+
+#playlist_div{
+    overflow-y:scroll;
+    overflow-x:hidden;
+    height:400px;
+}
+
+#playlist_row{
+    height:400px;
+    overflow-y:scroll;
+    overflow-x:hidden;
 
 }

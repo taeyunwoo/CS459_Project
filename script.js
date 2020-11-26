@@ -1,12 +1,18 @@
 var videoId;
 var api_key = "AIzaSyCqugvN_HgNqIhCn80iC2mS4nEFtiPtaLw";
-
+var load = 0;
 
 $(document).ready(function(){
 
 })
 
+//---------------
+
 function bringData(){
+    // if this page is reused
+    if(load){
+        document.getElementById("playlist_div").innerHTML = "";
+    }
     var videoLink = $('#videoLink').val();
     
     if(videoLink == ""){
@@ -47,6 +53,8 @@ function bringData(){
 
 }
 
+
+
 function firstComment(data){
     var firstCommentD = data.items[0].snippet.topLevelComment.snippet.textOriginal;
     var firstComment = data.items[0].snippet.topLevelComment.snippet.textDisplay;
@@ -63,7 +71,8 @@ function title(data){
     $('#title').text(title);
 }
 
-function string2time(data){ //brint the time. EX) 00:00 MUSE - Hysteria -> return 00:00
+///brint the time. EX) 00:00 MUSE - Hysteria -> return 00:00
+function string2time(data){ 
     var time;
     var splitData = data.split(":");
     var len = splitData.length;
@@ -76,7 +85,8 @@ function string2time(data){ //brint the time. EX) 00:00 MUSE - Hysteria -> retur
     return time;
 }
 
-function string2value(data){ //bring a value for comparing. EX) 10:30 -> 10*60 + 30
+//bring a value for comparing. EX) 10:30 -> 10*60 + 30
+function string2value(data){ 
     var parseData = data.split(":");
     var len = parseData.length;
     if(len == 2){
@@ -87,7 +97,10 @@ function string2value(data){ //bring a value for comparing. EX) 10:30 -> 10*60 +
     }
 }
 
-function parsePlaylist(data){ //this data is a pinned comment
+
+
+//this data is a pinned comment
+function parsePlaylist(data){ 
     var llist = data.split('\n');
     //console.log(llist);
     var len = llist.length;
@@ -149,4 +162,25 @@ function parsePlaylist(data){ //this data is a pinned comment
     }
     console.log(titleArray);
 
+    //insertInPlaylist(timeArray, titleArray);
+    insertInPlaylist(timeArray, titleArray);
+
+}
+
+function insertInPlaylist(timeArray, titleArray){
+    var len1 = timeArray.length;
+    var len2 = titleArray.length;
+
+    //if the length is different, there is an error in parsing 
+    if(len1 != len2){ 
+        alert("Parse Error");
+    }
+    var i;
+    
+    for(i = 0 ; i<len1 ; i++){
+        //$('#playlist_div').append("<span class = " +"first" + ">" + timeArray[i] + "</span>  <span>" +titleArray[i]+ "</span><br>");
+        $('#playlist_div').append("<span>" +titleArray[i]+ "</span><br>");
+
+    }
+    load = 1;
 }
