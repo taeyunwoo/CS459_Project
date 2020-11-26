@@ -1,12 +1,80 @@
+/* 
+** function note **
+- bringData()
+  Bring a YouTube API data based on video id (v=)
+
+- firstComment()
+  Bring a first comment of video which has this video id
+
+- insertInPlaylist()
+  Based on parsed data at parsePlaylist()
+  put in HTML div
+
+- parsePlaylist()
+  Parse the pinned comment that is about playlist timeline, 
+  and call the insertInPlaylist() function
+
+- string2time
+  change one comment line to time(string)
+  EX) 10:30 Muse - Hysteria -> 10:30
+
+- string2value
+  change string to time (sec)
+  EX) 10:30 -> 630
+
+- title
+  Bring a video title of the link
+*/
+
+//global variable
 var videoId;
-var api_key = "AIzaSyCqugvN_HgNqIhCn80iC2mS4nEFtiPtaLw";
+//var api_key = "AIzaSyCqugvN_HgNqIhCn80iC2mS4nEFtiPtaLw";
+var api_key = "AIzaSyAKwZDfEyLYuMjvMAeLmlyVFjlXMydwoZQ";
 var load = 0;
+var nowPlaying = "M0";
+var timeDic = {};
+
+// for YouTube iframe API
+var tag = document.createElement('script');
+tag.src = "https://www.youtube.com/player_api";
+var firstScriptTag = document.getElementsByTagName('script')[0];
+firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+var player;
+
+function onYouTubeIframeAPIReady(){
+    player = new YT.Player('player',{
+        width:'400',
+        height: '300',
+        videoId: 'gX4imVi8R6U',
+        playerVars: {rel: 0},
+        events: {
+            'onReady' : onPlayerReady,
+            'onStateChange' : onPlayerStateChange
+        }
+    });
+}
+
+function onPlayerReady(event) {
+    event.target.playVideo();
+}
+
+function onPlayerStateChange(event){
+}
+// YouTube iframe API code end
+
+$(document).keydown(function (key) { //1->49
+    if (key.keyCode == 49) {
+        console.log(player.getCurrentTime());
+    }
+    autoenter = 0;
+});
 
 $(document).ready(function(){
-
 })
 
-//---------------
+
+
 
 function bringData(){
     // if this page is reused
@@ -43,7 +111,8 @@ function bringData(){
     $.get(url, function(data){
     })
         .done(function(data){
-            $('iframe').attr('src',"https://www.youtube.com/embed/"+videoId);
+            //$('iframe').attr('src',"https://www.youtube.com/embed/"+ videoId); // +"?autoplay=1&enablejsapi=1");
+                player.loadVideoById(videoId, 0, "large");
             title(data);
         })
         .fail(function(data){
@@ -90,10 +159,10 @@ function string2value(data){
     var parseData = data.split(":");
     var len = parseData.length;
     if(len == 2){
-        return parseInt(data[0])*60 + parseInt(data[1]);
+        return parseInt(parseData[0])*60 + parseInt(parseData[1]);
     }
     if(len == 3){
-        return parseInt(data[0])*3600 + parseInt(data[1])*60 + parseInt(data[2]);
+        return parseInt(parseData[0])*3600 + parseInt(parseData[1])*60 + parseInt(parseData[2]);
     }
 }
 
@@ -164,7 +233,6 @@ function parsePlaylist(data){
 
     //insertInPlaylist(timeArray, titleArray);
     insertInPlaylist(timeArray, titleArray);
-
 }
 
 function insertInPlaylist(timeArray, titleArray){
@@ -179,8 +247,33 @@ function insertInPlaylist(timeArray, titleArray){
     
     for(i = 0 ; i<len1 ; i++){
         //$('#playlist_div').append("<span class = " +"first" + ">" + timeArray[i] + "</span>  <span>" +titleArray[i]+ "</span><br>");
-        $('#playlist_div').append("<span>" +titleArray[i]+ "</span><br>");
-
+        $('#playlist_div').append("<span class = \"M M"+ i +"\">" +titleArray[i]+ "<i class = \"M" + i+"\"></i>" +"</span>");
+        timeDic["M" + i] = string2value(timeArray[i]);
     }
     load = 1;
+    $("span." + nowPlaying).css("background", "#d3d3d3");
+}
+
+$("div#playlist_div").on('click',"span", function(event){
+    //console.log("hi");
+    //console.log(event.target);
+    //console.log($(this).attr('class').slice(2));
+    $("span." + nowPlaying).css("background", "");
+    $("i." + nowPlaying).html("<i class=\""+ nowPlaying +"\"></i>");
+    var time = $(this).attr('class').slice(2);
+    nowPlaying = time;
+    time = timeDic[time];
+    player.seekTo(time, true); 
+    $(this).css("background", "#d3d3d3");
+    $("i." + nowPlaying).html("<i class=\"far fa-play-circle\"></i>");
+
+})
+
+function whereAmI(current, timelist){
+    var len = timelist.length;
+    for (var i = 0 ; i<len-1 ; i++){
+        if((timelist[i] <= current) && (current < timelist[i+1])){
+            return timelist[i];
+        }
+    }
 }
