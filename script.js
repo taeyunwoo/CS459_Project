@@ -28,10 +28,10 @@
 
 //global variable
 var videoId;
-//var api_key = "AIzaSyCqugvN_HgNqIhCn80iC2mS4nEFtiPtaLw";
-var api_key = "AIzaSyAKwZDfEyLYuMjvMAeLmlyVFjlXMydwoZQ";
+//var api_key = "AIzaSyAKwZDfEyLYuMjvMAeLmlyVFjlXMydwoZQ";
+var api_key = "AIzaSyDkSfUzBfLdSnN6fGDN_A5Jze6NpqPYS5g";
 var load = 0;
-var nowPlaying = "M0";
+var nowPlaying = ["M0",0];
 var timeDic = {};
 
 // for YouTube iframe API
@@ -112,7 +112,8 @@ function bringData(){
     })
         .done(function(data){
             //$('iframe').attr('src',"https://www.youtube.com/embed/"+ videoId); // +"?autoplay=1&enablejsapi=1");
-                player.loadVideoById(videoId, 0, "large");
+            player.loadVideoById(videoId, 0, "large");
+            player.seekTo(0);
             title(data);
         })
         .fail(function(data){
@@ -146,7 +147,17 @@ function string2time(data){
     var splitData = data.split(":");
     var len = splitData.length;
     if(len == 2){ //this means that the video is shorter than 1 hour
-        time = splitData[0].slice(-2) + ":" + splitData[1].slice(0,2);
+        if(splitData[0].includes("[")){
+            if(splitData[0].length == 2){
+                time = splitData[0].slice(-1) + ":" + splitData[1].slice(0,2);
+            }
+            else{
+                time = splitData[0].slice(-2) + ":" + splitData[1].slice(0,2);
+            }
+        }
+        else{
+            time = splitData[0].slice(-2) + ":" + splitData[1].slice(0,2);
+        }
     }
     if(len == 3){ //this means that the video is longer than 1 hour
         time = splitData[0].slice(-2) + ":" + splitData[1] + ":" + splitData[2].slice(0,2);
@@ -166,7 +177,8 @@ function string2value(data){
     }
 }
 
-
+var timeArray = [];
+var titleArray = [];
 
 //this data is a pinned comment
 function parsePlaylist(data){ 
@@ -210,7 +222,6 @@ function parsePlaylist(data){
 
 
     var k;
-    var timeArray = [];
 
     for(k = i ; k < j+1 ; k+=dup){
         if(llist[k].includes(":")){
@@ -222,7 +233,7 @@ function parsePlaylist(data){
 
     videoLen = 0;
 
-    var titleArray = [];
+
     for(k = i ; k < j+1 ; k+=dup){
         if(llist[k].includes(timeArray[videoLen])){
             titleArray.push(llist[k].split(timeArray[videoLen])[1]);
@@ -251,21 +262,27 @@ function insertInPlaylist(timeArray, titleArray){
         timeDic["M" + i] = string2value(timeArray[i]);
     }
     load = 1;
-    $("span." + nowPlaying).css("background", "#d3d3d3");
+    $("span." + nowPlaying[0]).css("background", "#d3d3d3");
+    $("i." + nowPlaying[0]).html("<i class=\"far fa-play-circle\"></i>");
+    var inter = setInterval(changeNowPlaying, 1000, Object.values(timeDic));
 }
 
 $("div#playlist_div").on('click',"span", function(event){
     //console.log("hi");
     //console.log(event.target);
     //console.log($(this).attr('class').slice(2));
-    $("span." + nowPlaying).css("background", "");
-    $("i." + nowPlaying).html("<i class=\""+ nowPlaying +"\"></i>");
-    var time = $(this).attr('class').slice(2);
-    nowPlaying = time;
-    time = timeDic[time];
-    player.seekTo(time, true); 
-    $(this).css("background", "#d3d3d3");
-    $("i." + nowPlaying).html("<i class=\"far fa-play-circle\"></i>");
+    var time;
+    if(nowPlaying[0] != (time = $(this).attr('class').slice(2))){
+        $("span." + nowPlaying[0]).css("background", "");
+        $("i." + nowPlaying[0]).html("<i class=\""+ nowPlaying[0] +"\"></i>");
+        nowPlaying[0] = time;
+        time = timeDic[time];
+        nowPlaying[1] = time;
+        player.seekTo(time, true); 
+        $(this).css("background", "#d3d3d3");
+        $("i." + nowPlaying[0]).html("<i class=\"far fa-play-circle\"></i>");
+        updateRelateVideo();
+    }
 
 })
 
@@ -273,7 +290,44 @@ function whereAmI(current, timelist){
     var len = timelist.length;
     for (var i = 0 ; i<len-1 ; i++){
         if((timelist[i] <= current) && (current < timelist[i+1])){
-            return timelist[i];
+            return (i,timelist[i]);
         }
     }
+}
+
+function changeNowPlaying(timelist){
+    console.log(timelist.indexOf(nowPlaying[1]));
+    console.log(nowPlaying[1], nowPlaying);
+    if(player.getPlayerState() == 1){ // running only playing state
+        var time = player.getCurrentTime();
+        var ind = timelist.indexOf(nowPlaying[1]) + 1;
+        console.log(timelist[ind]);
+        if(time >= timelist[ind]){
+            console.log("change");
+            $("span." + nowPlaying[0]).css("background", "");
+            $("i." + nowPlaying[0]).html("<i class=\""+ nowPlaying[0] +"\"></i>");
+            nowPlaying[0] = "M" + ind;
+            nowPlaying[1] = timelist[ind];
+            $("span." + nowPlaying[0]).css("background", "#d3d3d3");
+            $("i." + nowPlaying[0]).html("<i class=\"far fa-play-circle\"></i>");
+        }
+    }
+}
+
+function updateRelateVideo(){
+    console.log(nowPlaying[0]);
+    console.log(nowPlaying[0].slice(1));
+
+    /*
+    var url = "https://www.googleapis.com/youtube/v3/search?part=snippet&q="+ titleArray[parseInt(nowPlaying[0][0])] + "&type=video&key=" + api_key;
+    $.get(url, function(data){
+    })
+        .done(function(data){
+            console.log(url);
+        })
+        .fail(function(data){
+            alert("HTTP GET request fails \nPlease check your video link again.")
+            return;
+        });
+*/
 }
