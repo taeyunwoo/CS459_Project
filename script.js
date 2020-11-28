@@ -29,10 +29,13 @@
 //global variable
 var videoId;
 //var api_key = "AIzaSyAKwZDfEyLYuMjvMAeLmlyVFjlXMydwoZQ";
+//var api_key = "AIzaSyAxXCc5NBtxIaAAruFiYCkcYmMrdF9uzFM" //mom
 var api_key = "AIzaSyDkSfUzBfLdSnN6fGDN_A5Jze6NpqPYS5g";
 var load = 0;
 var nowPlaying = ["M0",0];
 var timeDic = {};
+var inter;
+var inter_state = 0;
 
 // for YouTube iframe API
 var tag = document.createElement('script');
@@ -60,6 +63,16 @@ function onPlayerReady(event) {
 }
 
 function onPlayerStateChange(event){
+    console.log("state change");
+    if(player.getPlayerState() != 1){
+        inter_state = 0;
+        clearInterval(inter);
+    }
+    if(player.getPlayerState() == 1 && !inter_state){
+        clearInterval(inter);
+        inter = setInterval(changeNowPlaying, 1000, Object.values(timeDic));
+        inter_state = 1;
+    }
 }
 // YouTube iframe API code end
 
@@ -115,6 +128,7 @@ function bringData(){
             player.loadVideoById(videoId, 0, "large");
             player.seekTo(0);
             title(data);
+            $("div.RV").css("display","block");
         })
         .fail(function(data){
             alert("HTTP GET request fails \nPlease check your video link again.")
@@ -264,7 +278,9 @@ function insertInPlaylist(timeArray, titleArray){
     load = 1;
     $("span." + nowPlaying[0]).css("background", "#d3d3d3");
     $("i." + nowPlaying[0]).html("<i class=\"far fa-play-circle\"></i>");
-    var inter = setInterval(changeNowPlaying, 1000, Object.values(timeDic));
+    inter = setInterval(changeNowPlaying, 1000, Object.values(timeDic));
+    inter_state = 1;
+    updateRelateVideo();
 }
 
 $("div#playlist_div").on('click',"span", function(event){
@@ -290,44 +306,70 @@ function whereAmI(current, timelist){
     var len = timelist.length;
     for (var i = 0 ; i<len-1 ; i++){
         if((timelist[i] <= current) && (current < timelist[i+1])){
-            return (i,timelist[i]);
+            return [i,timelist[i]];
         }
     }
 }
 
 function changeNowPlaying(timelist){
-    console.log(timelist.indexOf(nowPlaying[1]));
-    console.log(nowPlaying[1], nowPlaying);
+    //console.log(timelist.indexOf(nowPlaying[1]));
+    //console.log(nowPlaying[1], nowPlaying);
     if(player.getPlayerState() == 1){ // running only playing state
         var time = player.getCurrentTime();
-        var ind = timelist.indexOf(nowPlaying[1]) + 1;
-        console.log(timelist[ind]);
-        if(time >= timelist[ind]){
-            console.log("change");
+        //console.log("change");
+        var temp = whereAmI(time, timelist);
+        if(timelist.indexOf(nowPlaying[1]) != temp[1]){
             $("span." + nowPlaying[0]).css("background", "");
             $("i." + nowPlaying[0]).html("<i class=\""+ nowPlaying[0] +"\"></i>");
-            nowPlaying[0] = "M" + ind;
-            nowPlaying[1] = timelist[ind];
+            nowPlaying[0] = "M" + temp[0];
+            nowPlaying[1] = temp[1];
             $("span." + nowPlaying[0]).css("background", "#d3d3d3");
             $("i." + nowPlaying[0]).html("<i class=\"far fa-play-circle\"></i>");
+            updateRelateVideo();
         }
     }
 }
 
 function updateRelateVideo(){
-    console.log(nowPlaying[0]);
-    console.log(nowPlaying[0].slice(1));
+    //console.log(nowPlaying[0]);
+    //console.log(nowPlaying[0].slice(1));
 
-    /*
-    var url = "https://www.googleapis.com/youtube/v3/search?part=snippet&q="+ titleArray[parseInt(nowPlaying[0][0])] + "&type=video&key=" + api_key;
+    var temp = encodeURI(titleArray[parseInt(nowPlaying[0].slice(1))].replace(/(\s*)/g, ""));
+    temp.replace("]","");
+
+    var url = "https://www.googleapis.com/youtube/v3/search?part=snippet&q="+ temp + "&maxResults=2&type=video&key=" + api_key;
+
     $.get(url, function(data){
     })
         .done(function(data){
-            console.log(url);
+            console.log(data);
+            var new_videoId = data.items[0].id.videoId;
+            //console.log(new_videoId);
+            url = "https://www.googleapis.com/youtube/v3/search?part=snippet&q="+ temp + "&maxResults=4&type=video&key=" + api_key;
+            $.get(url, function(data){
+            })
+                .done(function(data){
+                    var w = $("div.i"+0).width();
+                    for(var i = 0; i<4 ;i++){
+                       $("img.i"+i).attr("src", data.items[i].snippet.thumbnails.medium.url);
+                       $("span.i"+i).text(data.items[i].snippet.title);
+                       $("img.i"+i).css("width", w-1);
+                       $("img.i"+i).css("height", (w*9/16)-1);
+                       $("a.i"+i).attr("href", "https://www.youtube.com/watch?v="+data.items[0].id.videoId); 
+                       $("a.i"+i).attr("target","_blank");
+                       $("img.i"+i).css("cursor","pointer");
+                    }
+        
+                })
+                .fail(function(data){
+                    alert("HTTP GET request fails \nPlease check your video link again.")
+                    return;
+                });
+
         })
         .fail(function(data){
             alert("HTTP GET request fails \nPlease check your video link again.")
             return;
         });
-*/
+
 }
