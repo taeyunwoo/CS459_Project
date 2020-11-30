@@ -13,6 +13,31 @@
             
     </head>
     <body>
+
+    <!-- The core Firebase JS SDK is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-app.js"></script>    
+<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.14.5/firebase-database.js"></script>
+
+    <!-- TODO: Add SDKs for Firebase products that you want to use
+        https://firebase.google.com/docs/web/setup#available-libraries -->
+
+    <script>
+    // Your web app's Firebase configuration
+    var firebaseConfig = {
+        apiKey: "AIzaSyDnWt90YqgaD0ZJ54CD3fxHwMD-GmBEkWM",
+        authDomain: "cs374-pr3-63c86.firebaseapp.com",
+        databaseURL: "https://cs374-pr3-63c86.firebaseio.com",
+        projectId: "cs374-pr3-63c86",
+        storageBucket: "cs374-pr3-63c86.appspot.com",
+        messagingSenderId: "264406947732",
+        appId: "1:264406947732:web:a8c30606e5ddc760c6a181"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    </script>
+
         <div class="container">
             <div class = "row" style="height:2%"></div>
             <div class="row ">
@@ -36,18 +61,20 @@
                 <div class="col-lg-6">
                     <p id="title">   </p>
                 </div>
-                <div class = "col-lg-4">
+                <div class = "col-lg-3">
                     <div id = "control">
-                        <i class="fas fa-backward fa-2x"></i>
-                        <i class="fas fa-redo-alt fa-2x"></i>
-                        <i class="fas fa-random fa-2x"></i>
-                        <i class="fas fa-forward fa-2x"></i>
+                        <img src="img/repeat_b.png" width="32" height="32" id = "repeat" style = "cursor: pointer">
+                        <img src="img/repeat_1_b.png" width="32" height="32" id = "repeat_1" style = "cursor: pointer">
+                        <img src="img/shuffle_b.png" width="32" height="32" id = "shuffle" style = "cursor: pointer">
+
                     </div>
   
                     
                 </div>
             </div>
             <div class="row" id="playlist_row">
+                <div class = 'col-lg-1' >
+                </div>
                 <div class="col-lg-6">
                     
                     <!--
@@ -60,8 +87,7 @@
                 <div class = 'col-lg-4' id = "playlist_div">
 
                 </div>
-                <div class = 'col-lg-2'>
-
+                <div class = 'col-lg-1' >
                 </div>
             </div>
             <div class="row RV" style="display:none">
