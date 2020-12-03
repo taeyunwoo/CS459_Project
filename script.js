@@ -68,8 +68,8 @@ firebase.auth().getRedirectResult().then(function (result) {
 
 //global variable
 var videoId;
-//var api_key = "AIzaSyAKwZDfEyLYuMjvMAeLmlyVFjlXMydwoZQ";
-var api_key = "AIzaSyAxXCc5NBtxIaAAruFiYCkcYmMrdF9uzFM" //mom
+var api_key = "AIzaSyAKwZDfEyLYuMjvMAeLmlyVFjlXMydwoZQ";
+//var api_key = "AIzaSyAxXCc5NBtxIaAAruFiYCkcYmMrdF9uzFM" //mom
 //var api_key = "AIzaSyDkSfUzBfLdSnN6fGDN_A5Jze6NpqPYS5g";
 var search_key = "2ff1447aa77e7417c";
 var load = 0;
@@ -82,6 +82,10 @@ var repeat = 0;
 var repeat_1 = 0;
 var shuffle = 0;
 var click = 0;
+var video_updates = {
+};
+var error_var = 1;
+
 // for YouTube iframe API
 var tag = document.createElement('script');
 tag.src = "https://www.youtube.com/player_api";
@@ -169,23 +173,51 @@ function bringData() {
     //console.log(videoId);
     var url = "https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&key=" + api_key + "&videoId=" + videoId + "&maxResults=2";
     error_url = "https://www.youtube.com/watch?v=" + videoId;
-    $.get(url, function (data) {
-    })
-        .done(function (data) {
-            firstComment(data);
 
-            url = "https://www.googleapis.com/youtube/v3/videos?part=snippet&key=" + api_key + "&id=" + videoId;
+    db.ref('videos').once('value',function(snapshot){
+        if(snapshot.val().hasOwnProperty(videoId)){ // if there is videoId data in firebase
+            console.log("Yes");
+            var temp = snapshot.val()[videoId];
+            console.log(temp);
+            titleArray = temp.titleArray;
+            timeArray = temp.timeArray;
+            $('#title').text(temp.title);
+            player.loadVideoById(videoId, 0, "large");
+            player.seekTo(0);
+            insertInPlaylist(timeArray, titleArray);
+            $("div.RV").css("display", "block");
+        }
+        else{
             $.get(url, function (data) {
             })
                 .done(function (data) {
-                    console.log(url);
-                    //$('iframe').attr('src',"https://www.youtube.com/embed/"+ videoId); // +"?autoplay=1&enablejsapi=1");
-                    player.loadVideoById(videoId, 0, "large");
-                    player.seekTo(0);
-                    title(data);
-                    $("div.RV").css("display", "block");
+                    firstComment(data);
+        
+                    url = "https://www.googleapis.com/youtube/v3/videos?part=snippet&key=" + api_key + "&id=" + videoId;
+                    video_updates["videoid"] = videoId;
+                    $.get(url, function (data) {
+                    })
+                        .done(function (data) {
+                            console.log(url);
+                            //$('iframe').attr('src',"https://www.youtube.com/embed/"+ videoId); // +"?autoplay=1&enablejsapi=1");
+                            player.loadVideoById(videoId, 0, "large");
+                            player.seekTo(0);
+                            title(data);
+                            $("div.RV").css("display", "block");
+                        })
+                        .fail(function (data) {
+                            if(data.status == 403){
+                                alert("Sorry, my API quota reaches a maximum usage");
+                            }
+                            else{
+                                alert("HTTP GET request fails \nPlease check your video link again.");
+                            }
+                            return;
+                        });
+        
                 })
                 .fail(function (data) {
+                    console.log(data.status);
                     if(data.status == 403){
                         alert("Sorry, my API quota reaches a maximum usage");
                     }
@@ -194,21 +226,8 @@ function bringData() {
                     }
                     return;
                 });
-
-        })
-        .fail(function (data) {
-            console.log(data.status);
-            if(data.status == 403){
-                alert("Sorry, my API quota reaches a maximum usage");
-            }
-            else{
-                alert("HTTP GET request fails \nPlease check your video link again.");
-            }
-            return;
-        });
-
-    
-
+        }
+    })
 }
 
 
@@ -222,11 +241,14 @@ function firstComment(data) {
     $("#result").text(firstComment);
     parsePlaylist(firstCommentD);
 }
-
+var title_val;
 function title(data) {
-    var title = data.items[0].snippet.title;
+    title_val = data.items[0].snippet.title;
     //console.log(title);
-    $('#title').text(title);
+    $('#title').text(title_val);
+    console.log("title" + title_val);
+    video_updates["title"] = title_val;
+    db.ref('videos/' + videoId).update(video_updates);
 }
 
 ///brint the time. EX) 00:00 MUSE - Hysteria -> return 00:00
@@ -311,7 +333,7 @@ function parsePlaylist(data) {
             dup++;;
         }
     }
-    //console.log(dup);
+    console.log("dup", dup);
 
 
     var k;
@@ -321,12 +343,8 @@ function parsePlaylist(data) {
             timeArray.push(string2time(llist[k]));
         }
     }
-
     console.log(timeArray);
-
     videoLen = 0;
-
-
     for (k = i; k < j + 1; k += dup) {
         if (llist[k].includes(timeArray[videoLen])) {
             titleArray.push(llist[k].split(timeArray[videoLen])[1]);
@@ -350,19 +368,31 @@ function insertInPlaylist(timeArray, titleArray) {
         console.log(titleArray);
         updateError(error_url, "Prasing Error");
     }
-    var i;
 
-    for (i = 0; i < len1; i++) {
-        //$('#playlist_div').append("<span class = " +"first" + ">" + timeArray[i] + "</span>  <span>" +titleArray[i]+ "</span><br>");
-        $('#playlist_div').append("<span class = \"M M" + i + "\">" + titleArray[i] + "<i class = \"M" + i + "\"></i>" + "</span>");
-        timeDic["M" + i] = string2value(timeArray[i]);
+
+    else{
+        var i;
+        // code for inserting a data to firebase (DW)
+        video_updates["timeArray"] = timeArray;
+        video_updates["titleArray"] = titleArray;
+        //video_updates["t"] = document.getElementById('title').val();
+        video_updates["status"] = true;
+
+
+
+        for (i = 0; i < len1; i++) {
+            //$('#playlist_div').append("<span class = " +"first" + ">" + timeArray[i] + "</span>  <span>" +titleArray[i]+ "</span><br>");
+            $('#playlist_div').append("<span class = \"M M" + i + "\">" + titleArray[i] + "<i class = \"M" + i + "\"></i>" + "</span>");
+            timeDic["M" + i] = string2value(timeArray[i]);
+        }
+        load = 1;
+        $("span." + nowPlaying[0]).css("background", "#d3d3d3");
+        $("i." + nowPlaying[0]).html("<i class=\"far fa-play-circle\"></i>");
+        inter = setInterval(changeNowPlaying, 1000, Object.values(timeDic));
+        inter_state = 1;
+        updateRelateVideo();
     }
-    load = 1;
-    $("span." + nowPlaying[0]).css("background", "#d3d3d3");
-    $("i." + nowPlaying[0]).html("<i class=\"far fa-play-circle\"></i>");
-    inter = setInterval(changeNowPlaying, 1000, Object.values(timeDic));
-    inter_state = 1;
-    updateRelateVideo();
+
 }
 
 $("div#playlist_div").on('click', "span", function (event) {
@@ -572,14 +602,15 @@ function pick_random(){
     }
 }
 
-function report(){
-    window.open("Report.html","Reporting an Error page", "width=400, height=600, left = 100, top = 50");
+function report(data){
+    var openWin = window.open("Report.html?"+ error_url,"Reporting an Error page", "width=400, height=600, left = 100, top = 50");
 }
 
 function report_fb(){
     var new_key = db.ref().child('user_errors').push().key;
+
     var updates = {
-        "error url ": error_url,
+        "error url ": location.href.split("html?")[1],
         "error message": document.getElementById('report').value
     }
     db.ref('user_errors/' + new_key).update({
