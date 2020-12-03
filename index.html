@@ -1,5 +1,6 @@
 <html>
     <head>
+        <title> YouTube Playlist video Player </title>
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
         <link href="body.css" rel="stylesheet" />
         <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" />
@@ -45,7 +46,7 @@
                     <H1>YouTube Playlist Music Player</H1>
                 </div>
                 <div class = "col-lg-3">
-
+                    <i class="fas fa-exclamation-circle fa-2x" id="report" title="Report an error" onclick = "report()"></i>
                 </div>
             </div>
             <div class="row">
@@ -58,18 +59,19 @@
                 </div>
             </div>
             <div class="row" style = "height:32px">
+                <div class = 'col-lg-1' >
+                </div>
                 <div class="col-lg-6">
                     <p id="title">   </p>
                 </div>
-                <div class = "col-lg-3">
+                <div class = "col-lg-4">
                     <div id = "control">
                         <img src="img/repeat_b.png" width="32" height="32" id = "repeat" style = "cursor: pointer">
                         <img src="img/repeat_1_b.png" width="32" height="32" id = "repeat_1" style = "cursor: pointer">
                         <img src="img/shuffle_b.png" width="32" height="32" id = "shuffle" style = "cursor: pointer">
-
                     </div>
-  
-                    
+                </div>
+                <div class = 'col-lg-1' >
                 </div>
             </div>
             <div class="row" id="playlist_row">

@@ -51,4 +51,7 @@ button {
 #control{
     text-align: center;
 }
-
+#report:hover{
+    color:#e33a2b;
+    cursor: pointer;
+}

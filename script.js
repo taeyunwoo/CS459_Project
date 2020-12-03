@@ -81,7 +81,7 @@ var db = firebase.database();
 var repeat = 0;
 var repeat_1 = 0;
 var shuffle = 0;
-
+var click = 0;
 // for YouTube iframe API
 var tag = document.createElement('script');
 tag.src = "https://www.youtube.com/player_api";
@@ -109,12 +109,16 @@ function onPlayerReady(event) {
 
 function onPlayerStateChange(event) {
     console.log("state change");
+    if(player.getPlayerState() == 0 && repeat){ //if video is ended
+        player.playVideo();
+    }
     if (player.getPlayerState() != 1) {
         inter_state = 0;
         clearInterval(inter);
     }
     if (player.getPlayerState() == 1 && !inter_state) {
         clearInterval(inter);
+        click = 1;
         inter = setInterval(changeNowPlaying, 1000, Object.values(timeDic));
         inter_state = 1;
     }
@@ -142,7 +146,7 @@ $(document).ready(function () {
 })
 
 
-var error_url;
+var error_url = "";
 
 function bringData() {
     // if this page is reused
@@ -174,6 +178,7 @@ function bringData() {
             $.get(url, function (data) {
             })
                 .done(function (data) {
+                    console.log(url);
                     //$('iframe').attr('src',"https://www.youtube.com/embed/"+ videoId); // +"?autoplay=1&enablejsapi=1");
                     player.loadVideoById(videoId, 0, "large");
                     player.seekTo(0);
@@ -341,6 +346,8 @@ function insertInPlaylist(timeArray, titleArray) {
     //if the length is different, there is an error in parsing 
     if (len1 != len2) {
         alert("Parse Error");
+        console.log(timeArray);
+        console.log(titleArray);
         updateError(error_url, "Prasing Error");
     }
     var i;
@@ -364,6 +371,7 @@ $("div#playlist_div").on('click', "span", function (event) {
     //console.log($(this).attr('class').slice(2));
     var time;
     if (nowPlaying[0] != (time = $(this).attr('class').slice(2))) {
+        click = 1;
         $("span." + nowPlaying[0]).css("background", "");
         $("i." + nowPlaying[0]).html("<i class=\"" + nowPlaying[0] + "\"></i>");
         nowPlaying[0] = time;
@@ -385,22 +393,52 @@ function whereAmI(current, timelist) {
     }
 }
 
+var tempp;
+
 function changeNowPlaying(timelist) {
     //console.log(timelist.indexOf(nowPlaying[1]));
     //console.log(nowPlaying[1], nowPlaying);
     if (player.getPlayerState() == 1) { // running only playing state
         var time = player.getCurrentTime();
         //console.log("change");
-        var temp = whereAmI(time, timelist);
-        if (timelist.indexOf(nowPlaying[1]) != temp[1]) {
-            $("span." + nowPlaying[0]).css("background", "");
-            $("i." + nowPlaying[0]).html("<i class=\"" + nowPlaying[0] + "\"></i>");
-            nowPlaying[0] = "M" + temp[0];
-            nowPlaying[1] = temp[1];
-            $("span." + nowPlaying[0]).css("background", "#d3d3d3");
-            $("i." + nowPlaying[0]).html("<i class=\"far fa-play-circle\"></i>");
-            updateRelateVideo();
+        tempp = whereAmI(time, timelist);
+        console.log(timelist.indexOf(nowPlaying[1]), tempp[0]);
+        if (timelist.indexOf(nowPlaying[1]) != tempp[0]) {
+            console.log("in if condition");
+            if(repeat_1 && !click){ // if repeat one song is true
+                player.seekTo(nowPlaying[1], true);
+                click = 0;
+            }
+            else if(shuffle && !click){
+                console.log("ssss");
+                $("span." + nowPlaying[0]).css("background", "");
+                $("i." + nowPlaying[0]).html("<i class=\"" + nowPlaying[0] + "\"></i>");
+                var k = pick_random();
+                nowPlaying[0] = "M" + k;
+                nowPlaying[1] = timelist[k];
+                $("span." + nowPlaying[0]).css("background", "#d3d3d3");
+                $("i." + nowPlaying[0]).html("<i class=\"far fa-play-circle\"></i>");
+                player.seekTo(nowPlaying[1], true);
+                updateRelateVideo();
+                click = 0;
+            }
+            else{ // default action
+                $("span." + nowPlaying[0]).css("background", "");
+                $("i." + nowPlaying[0]).html("<i class=\"" + nowPlaying[0] + "\"></i>");
+                nowPlaying[0] = "M" + tempp[0];
+                nowPlaying[1] = tempp[1];
+                if(shuffle){
+                    played[tempp[0]] = 1;
+                }
+                $("span." + nowPlaying[0]).css("background", "#d3d3d3");
+                $("i." + nowPlaying[0]).html("<i class=\"far fa-play-circle\"></i>");
+                updateRelateVideo();
+                click = 0;
+            }
+            // below, basic funciton
+
         }
+        click = 0;
     }
 }
 
@@ -506,12 +544,55 @@ $("div#control").on('click', "img", function (event) {
             else{
                 $(this).attr("src", "img/shuffle_r.png");
                 shuffle = 1;
+                init_played();
+                played[parseInt(nowPlaying[0].slice(1))] = 1;
             }
             break;
         default:
             break
     }
 })
+var played = [];
+function init_played(){
+    var len = timeArray.length;
+    for(var i = 0 ; i<len ; i++){
+        played.push(0);
+    }
+}
 
+function pick_random(){
+    var len = played.length;
+    var ran;
+    while(1){
+        ran = Math.floor( Math.random() * len ); 
+        if(!played[ran]){
+            played[ran] = 1;
+            return ran;  
+        }
+    }
+}
 
+function report(){
+    window.open("Report.html","Reporting an Error page", "width=400, height=600, left = 100, top = 50");
+}
 
+function report_fb(){
+    var new_key = db.ref().child('user_errors').push().key;
+    var updates = {
+        "error url ": error_url,
+        "error message": document.getElementById('report').value
+    }
+    db.ref('user_errors/' + new_key).update({
+        updates
+    });
+    alert("Report Success!");
+    self.close();
+}
+/*
+function updateError(error_url, msg) {
+    db.ref('errors/').update({
+        "youtube error url": error_url,
+        "error message": msg
+    });
+}
+*/
