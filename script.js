@@ -68,8 +68,8 @@ firebase.auth().getRedirectResult().then(function (result) {
 
 //global variable
 var videoId;
-var api_key = "AIzaSyAKwZDfEyLYuMjvMAeLmlyVFjlXMydwoZQ";
-//var api_key = "AIzaSyAxXCc5NBtxIaAAruFiYCkcYmMrdF9uzFM" //mom
+//var api_key = "AIzaSyAKwZDfEyLYuMjvMAeLmlyVFjlXMydwoZQ";
+var api_key = "AIzaSyAxXCc5NBtxIaAAruFiYCkcYmMrdF9uzFM" //mom
 //var api_key = "AIzaSyDkSfUzBfLdSnN6fGDN_A5Jze6NpqPYS5g";
 var search_key = "2ff1447aa77e7417c";
 var load = 0;
@@ -85,6 +85,7 @@ var click = 0;
 var video_updates = {
 };
 var error_var = 1;
+var previous = [];
 
 // for YouTube iframe API
 var tag = document.createElement('script');
@@ -401,6 +402,8 @@ $("div#playlist_div").on('click', "span", function (event) {
     //console.log($(this).attr('class').slice(2));
     var time;
     if (nowPlaying[0] != (time = $(this).attr('class').slice(2))) {
+        console.log(time);
+        previous.push(nowPlaying[0]);
         click = 1;
         $("span." + nowPlaying[0]).css("background", "");
         $("i." + nowPlaying[0]).html("<i class=\"" + nowPlaying[0] + "\"></i>");
@@ -441,6 +444,7 @@ function changeNowPlaying(timelist) {
             }
             else if(shuffle && !click){
                 console.log("ssss");
+                previous.push(nowPlaying[0]);
                 $("span." + nowPlaying[0]).css("background", "");
                 $("i." + nowPlaying[0]).html("<i class=\"" + nowPlaying[0] + "\"></i>");
                 var k = pick_random();
@@ -453,6 +457,7 @@ function changeNowPlaying(timelist) {
                 click = 0;
             }
             else{ // default action
+                previous.push(nowPlaying[0]);
                 $("span." + nowPlaying[0]).css("background", "");
                 $("i." + nowPlaying[0]).html("<i class=\"" + nowPlaying[0] + "\"></i>");
                 nowPlaying[0] = "M" + tempp[0];
@@ -501,7 +506,6 @@ function updateRelateVideo() {
                         $("a.i" + i).attr("target", "_blank");
                         $("img.i" + i).css("cursor", "pointer");
                     }
-
                 })
                 .fail(function (data) {
                     if(data.status == 403){
@@ -619,11 +623,71 @@ function report_fb(){
     alert("Report Success!");
     self.close();
 }
-/*
-function updateError(error_url, msg) {
-    db.ref('errors/').update({
-        "youtube error url": error_url,
-        "error message": msg
-    });
+
+$("i.fas").on('click', function (event) {
+    var id = $(this).attr('id');
+    switch (id) {
+        case "prev":
+            prev();
+            break;
+        case "next":
+            next();
+            break;
+        default:
+            break
+    }
+})
+
+function prev(){
+    var len = timeArray.length;
+    if(nowPlaying[0] == "M0"){
+        alert("First Song!");
+    }    
+    else{
+        $("span." + nowPlaying[0]).css("background", "");
+        $("i." + nowPlaying[0]).html("<i class=\"" + nowPlaying[0] + "\"></i>");
+        prevv = previous.pop();
+        nowPlaying[0] = prevv;
+        nowPlaying[1] = timeDic[nowPlaying[0]];
+        $("span." + nowPlaying[0]).css("background", "#d3d3d3");
+        $("i." + nowPlaying[0]).html("<i class=\"far fa-play-circle\"></i>");
+        player.seekTo(nowPlaying[1], true);
+        updateRelateVideo();
+    }
+
 }
-*/
+
+function next(){
+    var len = timeArray.length;
+    previous.push(nowPlaying[0]);
+    if(shuffle){
+        $("span." + nowPlaying[0]).css("background", "");
+        $("i." + nowPlaying[0]).html("<i class=\"" + nowPlaying[0] + "\"></i>");
+        var nextt = pick_random();
+        nowPlaying[0] = "M" + nextt;
+        nowPlaying[1] = timeDic[nowPlaying[0]];
+        $("span." + nowPlaying[0]).css("background", "#d3d3d3");
+        $("i." + nowPlaying[0]).html("<i class=\"far fa-play-circle\"></i>");
+        player.seekTo(nowPlaying[1], true);
+
+        updateRelateVideo();
+    }
+    else{  
+        //if last song
+        if(nowPlaying[0] == ("M" + len)){ 
+            alert("Last Song!");
+        }
+        else{
+            $("span." + nowPlaying[0]).css("background", "");
+            $("i." + nowPlaying[0]).html("<i class=\"" + nowPlaying[0] + "\"></i>");
+            var nextt = parseInt(nowPlaying[0].slice(1)) + 1;
+            nowPlaying[0] = "M" + nextt;
+            nowPlaying[1] = timeDic[nowPlaying[0]];
+            //console.log("new", nowPlaying, timeDic);
+            player.seekTo(nowPlaying[1], true);
+            $("span." + nowPlaying[0]).css("background", "#d3d3d3");
+            $("i." + nowPlaying[0]).html("<i class=\"far fa-play-circle\"></i>");
+            updateRelateVideo();
+        }
+    }
+}
