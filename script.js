@@ -69,8 +69,8 @@ firebase.auth().getRedirectResult().then(function (result) {
 //global variable
 var videoId;
 //var api_key = "AIzaSyAKwZDfEyLYuMjvMAeLmlyVFjlXMydwoZQ";
-var api_key = "AIzaSyAxXCc5NBtxIaAAruFiYCkcYmMrdF9uzFM" //mom
-//var api_key = "AIzaSyDkSfUzBfLdSnN6fGDN_A5Jze6NpqPYS5g";
+//var api_key = "AIzaSyAxXCc5NBtxIaAAruFiYCkcYmMrdF9uzFM" //mom
+var api_key = "AIzaSyDkSfUzBfLdSnN6fGDN_A5Jze6NpqPYS5g";
 var search_key = "2ff1447aa77e7417c";
 var load = 0;
 var nowPlaying = ["M0", 0];
@@ -86,7 +86,7 @@ var video_updates = {
 };
 var error_var = 1;
 var previous = [];
-
+var relate_v = [];
 // for YouTube iframe API
 var tag = document.createElement('script');
 tag.src = "https://www.youtube.com/player_api";
@@ -261,7 +261,11 @@ function string2time(data) {
         updateError(error_url, "Pinned comment is not a timetable");
     }
 
-    var len = splitData.length;
+    try {
+        var len = splitData.length;
+    } catch (error) {
+        updateError(error_url, "Pinned comment is not a timetable");
+    }
     if (len == 2) { //this means that the video is shorter than 1 hour
         if (splitData[0].includes("[")) {
             if (splitData[0].length == 2) {
@@ -378,6 +382,11 @@ function insertInPlaylist(timeArray, titleArray) {
         video_updates["titleArray"] = titleArray;
         //video_updates["t"] = document.getElementById('title').val();
         video_updates["status"] = true;
+        var rel = [];
+        relate_v = []; //initialize relate_v
+        for(i=0;i<len1;i++){
+            relate_v.push(0);
+        }
 
 
 
@@ -478,6 +487,7 @@ function changeNowPlaying(timelist) {
 }
 
 function updateRelateVideo() {
+    
     //console.log(nowPlaying[0]);
     //console.log(nowPlaying[0].slice(1));
 
@@ -485,50 +495,62 @@ function updateRelateVideo() {
     temp.replace("]", "");
 
     var url = "https://www.googleapis.com/youtube/v3/search?part=snippet&q=" + temp + "&maxResults=2&type=video&key=" + api_key;
-
-    $.get(url, function (data) {
-    })
-        .done(function (data) {
-            console.log(data);
-            var new_videoId = data.items[0].id.videoId;
-            //console.log(new_videoId);
-            url = "https://www.googleapis.com/youtube/v3/search?part=snippet&q=" + temp + "&maxResults=4&type=video&key=" + api_key;
-            $.get(url, function (data) {
-            })
-                .done(function (data) {
-                    var w = $("div.i" + 0).width();
-                    for (var i = 0; i < 4; i++) {
-                        $("img.i" + i).attr("src", data.items[i].snippet.thumbnails.medium.url);
-                        $("span.i" + i).text(data.items[i].snippet.title);
-                        $("img.i" + i).css("width", w - 1);
-                        $("img.i" + i).css("height", (w * 9 / 16) - 1);
-                        $("a.i" + i).attr("href", "https://www.youtube.com/watch?v=" + data.items[0].id.videoId);
-                        $("a.i" + i).attr("target", "_blank");
-                        $("img.i" + i).css("cursor", "pointer");
-                    }
-                })
-                .fail(function (data) {
-                    if(data.status == 403){
-                        alert("Sorry, my API quota reaches a maximum usage");
-                    }
-                    else{
-                        alert("HTTP GET request fails \nPlease check your video link again.");
-                    }
-                    return;
-                });
-
+    var ind = parseInt(nowPlaying[0].slice(1));
+    if(relate_v[ind] == 0){
+        $.get(url, function (data) {
         })
-        .fail(function (data) {
-            if(data.status == 403){
-                alert("Sorry, my API quota reaches a maximum usage");
-            }
-            else{
-                alert("HTTP GET request fails \nPlease check your video link again.");
-            }
-            return;
-        });
+            .done(function (data) {
+                console.log(data);
+                var new_videoId = data.items[0].id.videoId;
+                //console.log(new_videoId);
+                url = "https://www.googleapis.com/youtube/v3/search?part=snippet&q=" + temp + "&maxResults=4&type=video&key=" + api_key;
+                $.get(url, function (data) {
+                })
+                    .done(function (data) {
+                        var w = $("div.i" + 0).width();
+                        for (var i = 0; i < 4; i++) {
+                            $("img.i" + i).attr("src", data.items[i].snippet.thumbnails.medium.url);
+                            $("span.i" + i).text(data.items[i].snippet.title);
+                            $("img.i" + i).css("width", w - 1);
+                            $("img.i" + i).css("height", (w * 9 / 16) - 1);
+                            $("a.i" + i).attr("href", "https://www.youtube.com/watch?v=" + data.items[0].id.videoId);
+                            $("a.i" + i).attr("target", "_blank");
+                            $("img.i" + i).css("cursor", "pointer");
+                        }
+                        console.log($("#relate").html());
+                        relate_v[ind] = $("#relate").html();
+                    })
+                    .fail(function (data) {
+                        if(data.status == 403){
+                            alert("Sorry, my API quota reaches a maximum usage");
+                        }
+                        else{
+                            alert("HTTP GET request fails \nPlease check your video link again.");
+                        }
+                        return;
+                    });
+    
+            })
+            .fail(function (data) {
+                if(data.status == 403){
+                    alert("Sorry, my API quota reaches a maximum usage");
+                }
+                else{
+                    alert("HTTP GET request fails \nPlease check your video link again.");
+                }
+                return;
+            });
+    }
+    else{
+        $("#relate").empty();
+        $("#relate").append(relate_v[ind]);
+    }
+
     //updateLyric();
 }
+$("span#lyric").on('click', function(event){
+    updateLyric();
+})
 
 function updateLyric() {
     var temp = encodeURI(titleArray[parseInt(nowPlaying[0].slice(1))].replace(/(\s*)/g, ""));
@@ -538,9 +560,8 @@ function updateLyric() {
         .done(function (data) {
             console.log(data);
             url = data.items[0].formattedUrl;
-            $.get(url, function (data) {
-                console.log(data);
-            })
+                var openWin = window.open(url);
+
         })
         .fail(function (data) {
             alert("Sorry, I can't find a lyric of now Playing \n Please try again");

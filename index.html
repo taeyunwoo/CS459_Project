@@ -39,31 +39,34 @@
     firebase.initializeApp(firebaseConfig);
     </script>
 
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+
         <div class="container">
             <div class = "row" style="height:2%"></div>
             <div class="row ">
                 <div class="col-lg-9">
                     <H1>YouTube Playlist Music Player</H1>
                 </div>
-                <div class = "col-lg-3">
+                <div class = "col-lg-3" style="text-align: end;">
                     <i class="fas fa-exclamation-circle fa-2x" id="report" title="Report an error" onclick = "report()"></i>
                 </div>
             </div>
             <div class="row">
-                <div class="col-lg-9">
+                <div class="col-lg-8">
                     <input type = "text" id = "videoLink" placeholder="   Insert YouTube Video Link"/>
                     <button onclick="bringData()" class = "btn btn-sm btn-success"> <i class="fas fa-sync-alt"></i>                    </button>
                 </div>
-                <div class = "col-lg-3">
-                    
+                <div class = "col-lg-4">
                 </div>
             </div>
             <div class="row" style = "height:32px">
-                <div class = 'col-lg-1' >
+                <div class = "col-lg-1">
                 </div>
                 <div class="col-lg-6">
                     <p id="title">   </p>
                 </div>
+
                 <div class = "col-lg-4">
                     <div id = "control" style="font-size:32px; text-align: center;">
                         <i class="fas fa-backward" style="cursor:pointer" id="prev"></i>
@@ -72,15 +75,17 @@
                         <img src="img/repeat_b.png" width="32" height="32" id = "repeat" style = "cursor: pointer">
                         <img src="img/repeat_1_b.png" width="32" height="32" id = "repeat_1" style = "cursor: pointer">
                         <img src="img/shuffle_b.png" width="32" height="32" id = "shuffle" style = "cursor: pointer">
+                        <span id="lyric" title="See Lyric (Popup)"> Lyric </span>
+
                     </div>
                 </div>
-                <div class = 'col-lg-1' >
+                <div class = "col-lg-1" >
                 </div>
             </div>
             <div class="row" id="playlist_row">
-                <div class = 'col-lg-1' >
+                <div class = "col-lg-1">
                 </div>
-                <div class="col-lg-6">
+                <div class="col-lg-6" style= "border-right:1px solid">
                     
                     <!--
                         <iframe width="400" height="300" src="https://www.youtube.com/embed/XrPBMs_gSeA?enablejsapi=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
@@ -89,39 +94,43 @@
 
                     </div>
                     </div>
-                <div class = 'col-lg-4' id = "playlist_div">
+ 
+                <div class = 'col-lg-4' id = "playlist_div" style="border-right:1px solid">
 
                 </div>
                 <div class = 'col-lg-1' >
                 </div>
             </div>
-            <div class="row RV" style="display:none">
+            <div class="row" style="height:4px; border-bottom:1px solid #d3d3d3">
+
+            </div>
+            <div class="row RV" style="display:none; ">
                 <h3> Related video of Now Playing music </h3>
             </div>
             <div class= "row" id="relate">
                 <div class = "col-lg-3 i0">
                     <a class="i0">
-                        <img class = "i0" src="">
+                        <img class = "i0" src=""> <br>
                         <span class = "i0"></span> 
                     </a>
                 </div>
                 <div class = "col-lg-3 i1">                    
                     <a class="i1">
-                        <img class = "i1" src="">
+                        <img class = "i1" src=""> <br>
                         <span class = "i1"></span>
                     </a>
 
                 </div>
                 <div class = "col-lg-3 i2">
                     <a class="i1">
-                        <img class = "i2" src="">
+                        <img class = "i2" src=""> <br>
                         <span class = "i2"></span>   
                     </a>
                
                 </div>
                 <div class = "col-lg-3 i3">
                     <a class="i1">
-                        <img class = "i3" src="">
+                        <img class = "i3" src=""> <br>
                         <span class = "i3"></span> 
                     </a>
         

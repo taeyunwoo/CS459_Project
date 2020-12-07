@@ -1,4 +1,6 @@
-
+body{
+    font-family: 'Roboto', sans-serif;
+}
 .row {
     margin: 1%;
     height:fixed;
@@ -60,4 +62,15 @@ button {
 #control > img{
     vertical-align: middle;
     margin-bottom: 10px;
+}
+#lyric{
+    display:inline-block;
+    cursor:pointer;
+    font-size: 20px;
+    border:1px solid black;
+    padding-right: 3px;
+    padding-left: 3px;
+    margin-left: 3px;
+    position: absolute;
+    margin-top:6px;
 }
