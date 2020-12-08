@@ -68,10 +68,8 @@ firebase.auth().getRedirectResult().then(function (result) {
 
 //global variable
 var videoId;
-//var api_key = "AIzaSyAKwZDfEyLYuMjvMAeLmlyVFjlXMydwoZQ";
-//var api_key = "AIzaSyAxXCc5NBtxIaAAruFiYCkcYmMrdF9uzFM" //mom
-var api_key = "AIzaSyDkSfUzBfLdSnN6fGDN_A5Jze6NpqPYS5g";
-var search_key = "2ff1447aa77e7417c";
+var api_key;
+var search_key;
 var load = 0;
 var nowPlaying = ["M0", 0];
 var timeDic = {};
